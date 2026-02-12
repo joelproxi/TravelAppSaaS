@@ -6,7 +6,7 @@
 checkstyle:
   stage: lint
   image: $MAVEN_IMAGE
-  <<: *maven-cache
+  <<: *.maven-cache
   script:
     - echo "🔍 Vérification Checkstyle..."
     - mvn $MAVEN_CLI_OPTS checkstyle:check -Dcheckstyle.config.location=quality/checkstyle.xml || true
@@ -28,7 +28,7 @@ checkstyle:
 pmd-analysis:
   stage: lint
   image: $MAVEN_IMAGE
-  <<: *maven-cache
+  <<: *.maven-cache
   script:
     - echo "🔍 Analyse PMD..."
     - mvn $MAVEN_CLI_OPTS pmd:check || true
