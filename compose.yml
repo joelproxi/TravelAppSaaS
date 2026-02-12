@@ -1,0 +1,110 @@
+services:
+  postgres-app:
+    image: postgres:18-alpine
+    container_name: travel-app-db
+    environment:
+      POSTGRES_DB: travel_app
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata-app:/var/lib/postgresql/data
+    networks:
+      - travel-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d travel_app"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================
+  #  PostgreSQL — Base de données de SonarQube
+  # ============================================================
+  postgres-sonar:
+    image: postgres:18-alpine
+    container_name: sonarqube-db
+    environment:
+      POSTGRES_DB: sonarqube
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+    volumes:
+      - pgdata-sonar:/var/lib/postgresql/data
+    networks:
+      - travel-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonar -d sonarqube"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================
+  #  SonarQube Community Edition
+  # ============================================================
+  sonarqube:
+    image: sonarqube:latest
+    container_name: sonarqube
+    depends_on:
+      postgres-sonar:
+        condition: service_healthy
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://postgres-sonar:5432/sonarqube
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+      # Augmenter la mémoire pour les analyses
+      SONAR_CE_JAVAOPTS: "-Xmx2g -Xms512m"
+      SONAR_WEB_JAVAOPTS: "-Xmx1g -Xms256m"
+      SONAR_SEARCH_JAVAOPTS: "-Xmx1g -Xms1g"
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-logs:/opt/sonarqube/logs
+      - sonarqube-extensions:/opt/sonarqube/extensions
+    networks:
+      - travel-network
+    # Nécessaire pour ElasticSearch embarqué
+    ulimits:
+      nofile:
+        soft: 131072
+        hard: 131072
+      nproc:
+        soft: 8192
+        hard: 8192
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/api/system/status | grep -q UP"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
+  # ============================================================
+  #  Application Spring Boot
+  # ============================================================
+  travel-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: travel-app
+    depends_on:
+      postgres-app:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-app:5432/travel_app
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+    networks:
+      - travel-network
+
+volumes:
+  pgdata-app:
+  pgdata-sonar:
+  sonarqube-data:
+  sonarqube-logs:
+  sonarqube-extensions:
+
+networks:
+  travel-network:
+    driver: bridge

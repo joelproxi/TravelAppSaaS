@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/travel_app_test
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+jwt:
+  access-secret: test-access-secret-key-that-is-at-least-64-characters-long-for-hs512
+  refresh-secret: test-refresh-secret-key-that-is-at-least-64-characters-long-for-hs512
+  access-expiration-ms: 900000
+  refresh-expiration-ms: 604800000
+
+tenant:
+  base-domain: test.com
+  ignored-subdomains: www,api

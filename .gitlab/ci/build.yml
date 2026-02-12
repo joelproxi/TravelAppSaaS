@@ -1,0 +1,44 @@
+# ============================================================
+#  BUILD — Compilation du projet
+# ============================================================
+
+compile:
+  stage: build
+  image: $MAVEN_IMAGE
+  <<: *maven-cache
+  script:
+    - echo "🔨 Compilation du projet..."
+    - mvn $MAVEN_CLI_OPTS clean compile -DskipTests
+    - echo "✅ Compilation réussie"
+  artifacts:
+    paths:
+      - target/classes/
+      - target/generated-sources/
+    expire_in: 1 hour
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG
+  tags:
+    - docker
+
+dependency-tree:
+  stage: build
+  image: $MAVEN_IMAGE
+  <<: *maven-cache
+  script:
+    - echo "📦 Arbre des dépendances..."
+    - mvn $MAVEN_CLI_OPTS dependency:tree > dependency-tree.txt
+    - mvn $MAVEN_CLI_OPTS versions:display-dependency-updates > dependency-updates.txt || true
+  artifacts:
+    paths:
+      - dependency-tree.txt
+      - dependency-updates.txt
+    expire_in: 7 days
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  allow_failure: true
+  tags:
+    - docker

@@ -1,0 +1,76 @@
+
+# ============================================================
+#  LINT — Vérification du style et conventions de code
+# ============================================================
+
+checkstyle:
+  stage: lint
+  image: $MAVEN_IMAGE
+  <<: *maven-cache
+  script:
+    - echo "🔍 Vérification Checkstyle..."
+    - mvn $MAVEN_CLI_OPTS checkstyle:check -Dcheckstyle.config.location=quality/checkstyle.xml || true
+  artifacts:
+    when: always
+    paths:
+      - target/checkstyle-result.xml
+    reports:
+      codequality: target/checkstyle-result.xml
+    expire_in: 7 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: true
+  tags:
+    - docker
+
+pmd-analysis:
+  stage: lint
+  image: $MAVEN_IMAGE
+  <<: *maven-cache
+  script:
+    - echo "🔍 Analyse PMD..."
+    - mvn $MAVEN_CLI_OPTS pmd:check || true
+  artifacts:
+    when: always
+    paths:
+      - target/pmd.xml
+    expire_in: 7 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "develop"
+  allow_failure: true
+  tags:
+    - docker
+
+validate-yaml:
+  stage: lint
+  image: python:3.12-slim
+  before_script:
+    - pip install yamllint
+  script:
+    - echo "🔍 Validation des fichiers YAML..."
+    - yamllint -d relaxed k8s/ helm/ .gitlab-ci.yml .gitlab/ci/ || true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "**/*.yml"
+        - "**/*.yaml"
+  allow_failure: true
+  tags:
+    - docker
+
+validate-dockerfile:
+  stage: lint
+  image: hadolint/hadolint:latest-debian
+  script:
+    - echo "🔍 Validation du Dockerfile..."
+    - hadolint docker/Dockerfile || true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "docker/Dockerfile"
+  allow_failure: true
+  tags:
+    - docker

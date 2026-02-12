@@ -1,0 +1,72 @@
+variables:
+  # ============================================================
+  #  Java / Maven
+  # ============================================================
+  JAVA_VERSION: "21"
+  MAVEN_OPTS: >-
+    -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+    -Dorg.slf4j.simpleLogger.showDateTime=true
+    -Dorg.slf4j.simpleLogger.dateTimeFormat=HH:mm:ss
+  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
+  MAVEN_IMAGE: "maven:3.9-eclipse-temurin-21"
+
+  # ============================================================
+  #  PostgreSQL (service CI)
+  # ============================================================
+  POSTGRES_DB: travel_app_test
+  POSTGRES_USER: test
+  POSTGRES_PASSWORD: test
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/travel_app_test"
+  SPRING_DATASOURCE_USERNAME: test
+  SPRING_DATASOURCE_PASSWORD: test
+  SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+  SPRING_JPA_SHOW_SQL: "false"
+
+  # ============================================================
+  #  Docker
+  # ============================================================
+  DOCKER_IMAGE_NAME: "${CI_REGISTRY_IMAGE}"
+  DOCKER_BUILDKIT: "1"
+
+  # ============================================================
+  #  SonarQube (secrets dans Settings > CI/CD > Variables)
+  # ============================================================
+  # SONAR_HOST_URL: défini dans les variables CI/CD
+  # SONAR_TOKEN: défini dans les variables CI/CD (masked)
+  SONAR_PROJECT_KEY: "travel-app"
+
+  # ============================================================
+  #  Kubernetes / Helm
+  # ============================================================
+  KUBE_NAMESPACE_DEV: "travel-app-dev"
+  KUBE_NAMESPACE_STAGING: "travel-app-staging"
+  KUBE_NAMESPACE_PROD: "travel-app-prod"
+  HELM_RELEASE_NAME: "travel-app"
+
+  # ============================================================
+  #  Notifications
+  # ============================================================
+  # SLACK_WEBHOOK_URL: défini dans les variables CI/CD (masked)
+  # DISCORD_WEBHOOK_URL: défini dans les variables CI/CD (masked)
+
+# ============================================================
+#  Cache Maven global
+# ============================================================
+.maven-cache: &maven-cache
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-maven"
+    paths:
+      - .m2/repository/
+    policy: pull-push
+
+# ============================================================
+#  Service PostgreSQL réutilisable
+# ============================================================
+.postgres-service: &postgres-service
+  services:
+    - name: postgres:16-alpine
+      alias: postgres
+      variables:
+        POSTGRES_DB: $POSTGRES_DB
+        POSTGRES_USER: $POSTGRES_USER
+        POSTGRES_PASSWORD: $POSTGRES_PASSWORD

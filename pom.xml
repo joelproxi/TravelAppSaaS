@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.proxidev</groupId>
     <artifactId>TravelApplication</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>TravelApplication</name>
     <description>TravelApplication</description>
     <url/>
@@ -29,6 +29,8 @@
     <properties>
         <java.version>21</java.version>
         <jjwt.version>0.12.6</jjwt.version>
+        <!-- JaCoCo -->
+        <jacoco.version>0.8.12</jacoco.version>
     </properties>
     <dependencies>
         <dependency>
@@ -118,6 +120,7 @@
     </dependencies>
 
     <build>
+        <finalName>travel-app</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -142,6 +145,141 @@
                         </exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+            
+            <!-- ============================================================ -->
+            <!--  JACOCO — Couverture de code                                 -->
+            <!-- ============================================================ -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <configuration>
+                    <excludes>
+                        <!-- Exclure les classes sans logique métier -->
+                        <exclude>com/proxidev/travelapplication/entity/**</exclude>
+                        <exclude>com/proxidev/travelapplication/enums/**</exclude>
+                        <exclude>com/proxidev/travelapplication/dto/**</exclude>
+                        <exclude>com/proxidev/travelapplication/config/**</exclude>
+                        <exclude>com/proxidev/travelapplication/exception/**</exclude>
+                        <exclude>com/proxidev/travelapplication/seed/**</exclude>
+                        <exclude>com/proxidev/travelapplication/TravelApplication.class</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <!-- Prépare l'agent JaCoCo AVANT les tests -->
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/jacoco.exec</destFile>
+                        </configuration>
+                    </execution>
+
+                    <!-- Génère le rapport APRÈS les tests -->
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco.exec</dataFile>
+                            <outputDirectory>${project.build.directory}/site/jacoco</outputDirectory>
+                        </configuration>
+                    </execution>
+
+                    <!-- Vérifie les seuils de couverture -->
+                    <execution>
+                        <id>check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.70</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.60</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                                <!-- Règle par classe pour les services -->
+                                <rule>
+                                    <element>CLASS</element>
+                                    <includes>
+                                        <include>com.proxidev.travelapplication.service.*</include>
+                                    </includes>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.80</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ============================================================ -->
+            <!--  SONARQUBE Maven Plugin                                      -->
+            <!-- ============================================================ -->
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>4.0.0.4121</version>
+            </plugin>
+
+            <!-- ============================================================ -->
+            <!--  Surefire — Tests unitaires                                  -->
+            <!-- ============================================================ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/*IntegrationTest.java</exclude>
+                    </excludes>
+                    <argLine>${argLine}</argLine>
+                </configuration>
+            </plugin>
+
+            <!-- ============================================================ -->
+            <!--  Failsafe — Tests d'intégration                              -->
+            <!-- ============================================================ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*IntegrationTest.java</include>
+                    </includes>
+                    <argLine>${argLine}</argLine>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
