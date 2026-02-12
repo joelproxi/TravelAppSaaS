@@ -52,7 +52,7 @@ variables:
 # ============================================================
 #  Cache Maven global
 # ============================================================
-.maven-cache: &maven-cache
+.maven-cache:
   cache:
     key: "${CI_COMMIT_REF_SLUG}-maven"
     paths:
@@ -62,7 +62,7 @@ variables:
 # ============================================================
 #  Service PostgreSQL réutilisable
 # ============================================================
-.postgres-service: &postgres-service
+.postgres-service:
   services:
     - name: postgres:16-alpine
       alias: postgres

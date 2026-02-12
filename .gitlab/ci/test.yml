@@ -6,8 +6,9 @@
 unit-tests:
   stage: test
   image: $MAVEN_IMAGE
-  <<: *maven-cache
-  <<: *postgres-service
+  extends:
+    - .maven-cache
+    - .postgres-service
   needs:
     - job: compile
       artifacts: true
@@ -40,8 +41,9 @@ unit-tests:
 integration-tests:
   stage: test
   image: $MAVEN_IMAGE
-  <<: *maven-cache
-  <<: *postgres-service
+  extends:
+    - .maven-cache
+    - .postgres-service
   needs:
     - job: compile
       artifacts: true
@@ -79,8 +81,9 @@ integration-tests:
 architecture-tests:
   stage: test
   image: $MAVEN_IMAGE
-  <<: *maven-cache
-  <<: *postgres-service
+  extends:
+    - .maven-cache
+    - .postgres-service
   needs:
     - job: compile
       artifacts: true
@@ -105,8 +108,9 @@ architecture-tests:
 mutation-tests:
   stage: test
   image: $MAVEN_IMAGE
-  <<: *maven-cache
-  <<: *postgres-service
+  extends:
+    - .maven-cache
+    - .postgres-service
   needs:
     - job: compile
       artifacts: true
