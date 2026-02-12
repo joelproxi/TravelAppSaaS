@@ -6,7 +6,7 @@
 unit-tests:
   stage: test
   image: $MAVEN_IMAGE
-  <<: *.maven-cache
+  <<: *maven-cache
   <<: *postgres-service
   needs:
     - job: compile
@@ -40,7 +40,7 @@ unit-tests:
 integration-tests:
   stage: test
   image: $MAVEN_IMAGE
-  <<: *.maven-cache
+  <<: *maven-cache
   <<: *postgres-service
   needs:
     - job: compile
@@ -79,7 +79,7 @@ integration-tests:
 architecture-tests:
   stage: test
   image: $MAVEN_IMAGE
-  <<: *.maven-cache
+  <<: *maven-cache
   <<: *postgres-service
   needs:
     - job: compile
@@ -105,7 +105,7 @@ architecture-tests:
 mutation-tests:
   stage: test
   image: $MAVEN_IMAGE
-  <<: *.maven-cache
+  <<: *maven-cache
   <<: *postgres-service
   needs:
     - job: compile

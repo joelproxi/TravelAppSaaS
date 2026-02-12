@@ -5,7 +5,7 @@
 compile:
   stage: build
   image: $MAVEN_IMAGE
-  <<: *.maven-cache
+  <<: *maven-cache
   script:
     - echo "🔨 Compilation du projet..."
     - mvn $MAVEN_CLI_OPTS clean compile -DskipTests
@@ -26,7 +26,7 @@ compile:
 dependency-tree:
   stage: build
   image: $MAVEN_IMAGE
-  <<: *.maven-cache
+  <<: *maven-cache
   script:
     - echo "📦 Arbre des dépendances..."
     - mvn $MAVEN_CLI_OPTS dependency:tree > dependency-tree.txt
