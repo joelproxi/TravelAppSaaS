@@ -52,8 +52,6 @@ integration-tests:
     TESTCONTAINERS_RYUK_DISABLED: "true"
     DOCKER_HOST: "tcp://docker:2375"
   services:
-    - name: postgres:16-alpine
-      alias: postgres
     - name: docker:24-dind
       alias: docker
       command: ["--tls=false"]
