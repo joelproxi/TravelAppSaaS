@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: TravelApplication
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+
+jwt:
+  access-secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  refresh-secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  access-expiration-ms: 3600000 # 1 hour
+  refresh-expiration-ms: 86400000 # 1 day
+
+logging:
+  level:
+    root: INFO
+    com.proxidev.travelapplication: DEBUG
