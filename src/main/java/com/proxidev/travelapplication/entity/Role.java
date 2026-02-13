@@ -55,12 +55,8 @@ public class Role {
     @Column(insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "role_permissions",
-            joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "permission_id")
-    )
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "role_permissions", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     @Builder.Default
     private List<Permission> permissions = new ArrayList<>();
 
@@ -69,6 +65,3 @@ public class Role {
     @Builder.Default
     private List<UserRole> userRoles = new ArrayList<>();
 }
-
-
-

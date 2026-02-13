@@ -1,6 +1,5 @@
 package com.proxidev.travelapplication.config;
 
-
 import com.proxidev.travelapplication.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -43,16 +42,23 @@ public class SecurityConfig {
                                 "/api/auth/refresh",
                                 "/api/voyages/public/**",
                                 "/api/companies/public/**",
-                                "/health"
-                        ).permitAll()
-                        .anyRequest().authenticated()
-                )
+                                "/health",
+                                // Swagger/OpenAPI endpoints
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**")
+                        .permitAll()
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(12); }
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration c) throws Exception {

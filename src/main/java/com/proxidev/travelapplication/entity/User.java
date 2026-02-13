@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.proxidev.travelapplication.enums.UserType;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -16,9 +15,15 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@SuperBuilder
+@Table(name = "_users")
+@Builder
 @NoArgsConstructor
-public class User extends BaseEntity {
+@AllArgsConstructor
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false, length = 100)
     private String firstName;
@@ -71,5 +76,13 @@ public class User extends BaseEntity {
     @JsonIgnore
     @Builder.Default
     private List<RefreshToken> refreshTokens = new ArrayList<>();
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false, updatable = true, insertable = true)
+    private LocalDateTime modifiedAt;
 
 }
