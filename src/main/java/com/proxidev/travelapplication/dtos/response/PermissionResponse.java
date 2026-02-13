@@ -10,7 +10,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class PermissionResponse {
-    private UUID id;
+    private int id;
     private String name;
     private String description;
     private String module;

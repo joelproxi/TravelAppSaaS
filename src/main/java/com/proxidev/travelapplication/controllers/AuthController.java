@@ -1,10 +1,7 @@
 package com.proxidev.travelapplication.controllers;
 
 
-import com.proxidev.travelapplication.dtos.request.LoginRequest;
-import com.proxidev.travelapplication.dtos.request.LogoutRequest;
-import com.proxidev.travelapplication.dtos.request.RegisterCompanyRequest;
-import com.proxidev.travelapplication.dtos.request.RegisterTravelerRequest;
+import com.proxidev.travelapplication.dtos.request.*;
 import com.proxidev.travelapplication.dtos.response.MessageResponse;
 import com.proxidev.travelapplication.dtos.response.TokenResponse;
 import com.proxidev.travelapplication.security.CustomUserDetails;

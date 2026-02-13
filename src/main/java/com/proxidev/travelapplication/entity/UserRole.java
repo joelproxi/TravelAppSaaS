@@ -13,14 +13,13 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "user_roles",
-uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "role_id"})
+@Table(name = "user_roles", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "user_id", "role_id" })
 })
 public class UserRole {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private Integer id;
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
