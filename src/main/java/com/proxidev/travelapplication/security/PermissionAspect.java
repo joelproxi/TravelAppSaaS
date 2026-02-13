@@ -1,6 +1,5 @@
 package com.proxidev.travelapplication.security;
 
-
 import com.proxidev.travelapplication.enums.UserType;
 import com.proxidev.travelapplication.multitenancy.TenantContext;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +25,11 @@ public class PermissionAspect {
         if (auth == null || !(auth.getPrincipal() instanceof CustomUserDetails user))
             throw new AccessDeniedException("Authentification requise");
 
-        if (user.getUserType() == UserType.SUPER_ADMIN) return;
+        if (user.getUserType() == UserType.SUPER_ADMIN)
+            return;
 
-        UUID tenantId = TenantContext.getTenantContextHolder().id();
+        var context = TenantContext.getTenantContextHolder();
+        UUID tenantId = (context != null) ? context.id() : null;
         if (tenantId != null && user.getCompanyId() != null && !tenantId.equals(user.getCompanyId()))
             throw new AccessDeniedException("Vous ne pouvez pas accéder aux ressources d'une autre compagnie");
 

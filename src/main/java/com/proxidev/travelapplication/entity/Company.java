@@ -1,21 +1,20 @@
 package com.proxidev.travelapplication.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import com.proxidev.travelapplication.enums.CompanyStatus;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Builder
 @Getter
@@ -23,7 +22,11 @@ import lombok.Setter;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-public class Company extends BaseEntity{
+public class Company {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String name;
@@ -46,17 +49,29 @@ public class Company extends BaseEntity{
 
     @OneToMany(mappedBy = "company")
     @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<User> users = new ArrayList<>();
 
     @OneToMany(mappedBy = "company")
     @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Agency> agencies = new ArrayList<>();
 
     @OneToMany(mappedBy = "company")
     @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Role> roles = new ArrayList<>();
 
     @OneToMany(mappedBy = "company")
     @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Bus> buses = new ArrayList<>();
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false, updatable = true, insertable = true)
+    private LocalDateTime modifiedAt;
 }

@@ -1,6 +1,5 @@
 package com.proxidev.travelapplication.services;
 
-
 import com.proxidev.travelapplication.dtos.request.AssignRoleRequest;
 import com.proxidev.travelapplication.dtos.request.CreateRoleRequest;
 import com.proxidev.travelapplication.dtos.response.MessageResponse;
@@ -37,6 +36,7 @@ public class RoleService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<RoleResponse> getCompanyRoles(UUID companyId) {
         return roleRepo.findByCompanyIdOrderByCreatedAtAsc(companyId).stream()
                 .map(this::toResponse).toList();
@@ -85,9 +85,11 @@ public class RoleService {
     @Transactional
     public MessageResponse assignRole(AssignRoleRequest req, UUID companyId) {
         roleRepo.findByIdAndCompanyId(req.getRoleId(), companyId)
-                .orElseThrow(() -> new BusinessException("Rôle introuvable dans votre compagnie", HttpStatus.NOT_FOUND));
+                .orElseThrow(
+                        () -> new BusinessException("Rôle introuvable dans votre compagnie", HttpStatus.NOT_FOUND));
         userRepo.findByIdAndCompanyId(req.getUserId(), companyId)
-                .orElseThrow(() -> new BusinessException("Utilisateur introuvable dans votre compagnie", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new BusinessException("Utilisateur introuvable dans votre compagnie",
+                        HttpStatus.NOT_FOUND));
         if (userRoleRepo.existsByUserIdAndRoleId(req.getUserId(), req.getRoleId()))
             throw new BusinessException("Cet utilisateur possède déjà ce rôle");
 
@@ -99,7 +101,7 @@ public class RoleService {
     }
 
     @Transactional
-    public void removeRole(UUID userId, UUID roleId, UUID companyId) {
+    public void removeRole(UUID userId, int roleId, UUID companyId) {
         roleRepo.findByIdAndCompanyId(roleId, companyId)
                 .orElseThrow(() -> new BusinessException("Rôle introuvable", HttpStatus.NOT_FOUND));
         UserRole ur = userRoleRepo.findByUserIdAndRoleId(userId, roleId)
@@ -107,6 +109,7 @@ public class RoleService {
         userRoleRepo.delete(ur);
     }
 
+    @Transactional(readOnly = true)
     public List<RoleResponse> getUserRoles(UUID userId, UUID companyId) {
         return userRoleRepo.findByUserIdFetchRolePermissions(userId).stream()
                 .map(UserRole::getRole)
@@ -119,12 +122,11 @@ public class RoleService {
                 .id(role.getId()).name(role.getName())
                 .description(role.getDescription())
                 .companyId(role.getCompanyId()).system(role.isSystem())
-                .permissions(role.getPermissions() == null ? List.of() :
-                        role.getPermissions().stream().map(p ->
-                                PermissionResponse.builder()
-                                        .id(p.getId()).name(p.getName())
-                                        .description(p.getDescription()).module(p.getModule())
-                                        .build()).toList())
+                .permissions(role.getPermissions() == null ? List.of()
+                        : role.getPermissions().stream().map(p -> PermissionResponse.builder()
+                                .id(p.getId()).name(p.getName())
+                                .description(p.getDescription()).module(p.getModule())
+                                .build()).toList())
                 .build();
     }
 }
