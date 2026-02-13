@@ -1,6 +1,6 @@
 package com.proxidev.travelapplication.dtos.request;
 
-import jakarta.validation.constraints.NotBlank;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +10,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RefreshTokenRequest {
-    @NotBlank
+public class LogoutRequest {
     private String refreshToken;
 }

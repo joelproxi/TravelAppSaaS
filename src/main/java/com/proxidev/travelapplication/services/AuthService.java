@@ -1,6 +1,7 @@
 package com.proxidev.travelapplication.services;
 
 import com.proxidev.travelapplication.config.TenantProperties;
+import com.proxidev.travelapplication.dtos.request.LoginRequest;
 import com.proxidev.travelapplication.dtos.request.RefreshTokenRequest;
 import com.proxidev.travelapplication.dtos.request.RegisterCompanyRequest;
 import com.proxidev.travelapplication.dtos.request.RegisterTravelerRequest;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -219,8 +221,16 @@ public class AuthService {
         List<String> permissions = userService.extractPermissions(full);
         List<String> roles = userService.extractRoleNames(full);
 
-        String accessToken = jwt.generateAccessToken(full.getId(), full.getEmail(),
-                full.getUserType(), full.getCompanyId(), full.getAgencyId(), roles, permissions);
+        String accessToken = jwt.generateAccessToken(
+                full.getId(),
+                full.getEmail(),
+                full.getPhone(),
+                full.getUserType(),
+                full.getCompanyId(),
+                full.getAgencyId(),
+                roles,
+                permissions
+        );
 
         String jti = UUID.randomUUID().toString();
         String refreshToken = jwt.generateRefreshToken(full.getId(), jti);
