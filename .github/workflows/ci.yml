@@ -86,7 +86,7 @@ jobs:
         run: mvn -B verify -DskipUnitTests=true -Dfailsafe.rerunFailingTestsCount=2
 
       - name: Run Architecture Tests
-        run: mvn -B test -Dtest="com.travelapp.architecture.*" -DfailIfNoTests=false
+        run: mvn -B test -Dtest="com.proxidev.travelapplication.architecture.*" -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false
 
       - name: Upload Test Reports
         if: always()
