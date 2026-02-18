@@ -11,14 +11,8 @@ jobs:
     name: Lint & Analysis
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
+      - name: Setup Project
+        uses: ./.github/actions/setup
 
       - name: Checkstyle
         run: mvn -B checkstyle:check -Dcheckstyle.config.location=quality/checkstyle.xml || true
@@ -41,15 +35,12 @@ jobs:
     name: Compilation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
+      - name: Setup Project
+        uses: ./.github/actions/setup
+
       - name: Compile
         run: mvn -B clean compile -DskipTests
+
       - name: Cache Build Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -64,13 +55,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
+      - name: Setup Project
+        uses: ./.github/actions/setup
       
       - name: Download Compiled Classes
         uses: actions/download-artifact@v4
@@ -102,13 +88,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
+      - name: Setup Project
+        uses: ./.github/actions/setup
       
       - name: Dependency Tree
         run: |
