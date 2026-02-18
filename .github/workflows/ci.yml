@@ -35,6 +35,9 @@ jobs:
     name: Compilation
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Setup Project
         uses: ./.github/actions/setup
 
@@ -55,6 +58,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Setup Project
         uses: ./.github/actions/setup
       
@@ -88,6 +94,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Setup Project
         uses: ./.github/actions/setup
       
