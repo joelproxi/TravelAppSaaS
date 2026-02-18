@@ -7,11 +7,12 @@ import com.proxidev.travelapplication.dtos.request.RegisterCompanyRequest;
 import com.proxidev.travelapplication.dtos.request.RegisterTravelerRequest;
 import com.proxidev.travelapplication.dtos.response.MessageResponse;
 import com.proxidev.travelapplication.dtos.response.TokenResponse;
-import com.proxidev.travelapplication.dtos.response.UserInfoResponse;
 import com.proxidev.travelapplication.entity.*;
 import com.proxidev.travelapplication.enums.CompanyStatus;
 import com.proxidev.travelapplication.enums.UserType;
 import com.proxidev.travelapplication.exception.BusinessException;
+import com.proxidev.travelapplication.mappers.CompanyMapper;
+import com.proxidev.travelapplication.mappers.UserMapper;
 import com.proxidev.travelapplication.repository.*;
 import com.proxidev.travelapplication.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
@@ -42,19 +43,21 @@ public class AuthService {
     private final UserRoleRepository userRoleRepo;
     private final UserRepository userRepo;
     private final TenantProperties tenantProps;
+    private final UserMapper userMapper;
+    private final CompanyMapper companyMapper;
 
     // ================================================================
-    //  INSCRIPTION VOYAGEUR
+    // INSCRIPTION VOYAGEUR
     // ================================================================
     @Transactional
     public TokenResponse registerTraveler(RegisterTravelerRequest req) {
-        User user = userService.createUser(req.getFirstName(), req.getLastName(),
-                req.getEmail(), req.getPassword(), req.getPhone(), UserType.TRAVELER);
+        User user = userMapper.toEntity(req, UserType.TRAVELER);
+        user = userService.createUser(user, req.getPassword());
         return generateTokens(user, null, null);
     }
 
     // ================================================================
-    //  DEMANDE CRÉATION COMPAGNIE
+    // DEMANDE CRÉATION COMPAGNIE
     // ================================================================
     @Transactional
     public MessageResponse registerCompanyRequest(RegisterCompanyRequest req) {
@@ -62,16 +65,10 @@ public class AuthService {
         if (companyRepo.existsBySlug(slug))
             throw new BusinessException("Le sous-domaine '" + slug + "' est déjà pris", HttpStatus.CONFLICT);
 
-        User user = userService.createUser(req.getFirstName(), req.getLastName(),
-                req.getUserEmail(), req.getPassword(), req.getPhone(), UserType.COMPANY_ADMIN);
+        User user = userMapper.toEntity(req, UserType.COMPANY_ADMIN);
+        user = userService.createUser(user, req.getPassword());
 
-        Company company = Company.builder()
-                .name(req.getCompanyName()).slug(slug)
-                .description(req.getCompanyDescription())
-                .phone(req.getCompanyPhone()).email(req.getCompanyEmail())
-                .status(CompanyStatus.PENDING)
-                .requestedByUserId(user.getId())
-                .build();
+        Company company = companyMapper.toEntity(req, slug, user.getId());
         company = companyRepo.save(company);
 
         user.setCompany(company);
@@ -85,7 +82,7 @@ public class AuthService {
     }
 
     // ================================================================
-    //  VALIDATION COMPAGNIE (SUPER ADMIN)
+    // VALIDATION COMPAGNIE (SUPER ADMIN)
     // ================================================================
     @Transactional
     public MessageResponse approveCompany(UUID companyId) {
@@ -124,7 +121,7 @@ public class AuthService {
     }
 
     // ================================================================
-    //  CONNEXION
+    // CONNEXION
     // ================================================================
     @Transactional
     public TokenResponse login(LoginRequest req, String userAgent, String ip) {
@@ -143,7 +140,7 @@ public class AuthService {
     }
 
     // ================================================================
-    //  REFRESH TOKENS
+    // REFRESH TOKENS
     // ================================================================
     @Transactional
     public TokenResponse refreshTokens(RefreshTokenRequest req, String userAgent, String ip) {
@@ -181,7 +178,7 @@ public class AuthService {
     }
 
     // ================================================================
-    //  DÉCONNEXION
+    // DÉCONNEXION
     // ================================================================
     @Transactional
     public MessageResponse logout(UUID userId, String refreshTokenJwt) {
@@ -214,7 +211,7 @@ public class AuthService {
     }
 
     // ================================================================
-    //  PRIVÉ
+    // PRIVÉ
     // ================================================================
     private TokenResponse generateTokens(User user, String userAgent, String ip) {
         User full = userService.findByIdWithRoles(user.getId());
@@ -229,8 +226,7 @@ public class AuthService {
                 full.getCompanyId(),
                 full.getAgencyId(),
                 roles,
-                permissions
-        );
+                permissions);
 
         String jti = UUID.randomUUID().toString();
         String refreshToken = jwt.generateRefreshToken(full.getId(), jti);
@@ -247,12 +243,7 @@ public class AuthService {
         return TokenResponse.builder()
                 .accessToken(accessToken).refreshToken(refreshToken)
                 .tokenType("Bearer").expiresIn(jwt.getAccessExpirationMs() / 1000)
-                .user(UserInfoResponse.builder()
-                        .id(full.getId()).firstName(full.getFirstName()).lastName(full.getLastName())
-                        .email(full.getEmail()).userType(full.getUserType())
-                        .companyId(full.getCompanyId()).agencyId(full.getAgencyId())
-                        .roles(roles).permissions(permissions)
-                        .build())
+                .user(userMapper.toUserInfoResponse(full, roles, permissions))
                 .build();
     }
 }

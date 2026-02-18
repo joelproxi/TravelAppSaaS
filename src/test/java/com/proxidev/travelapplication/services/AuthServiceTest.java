@@ -2,9 +2,11 @@ package com.proxidev.travelapplication.services;
 
 import com.proxidev.travelapplication.dtos.request.RegisterTravelerRequest;
 import com.proxidev.travelapplication.dtos.response.TokenResponse;
+import com.proxidev.travelapplication.dtos.response.UserInfoResponse;
 import com.proxidev.travelapplication.entity.User;
 import com.proxidev.travelapplication.enums.UserType;
-import com.proxidev.travelapplication.repository.RefreshTokenRepository;
+import com.proxidev.travelapplication.mappers.CompanyMapper;
+import com.proxidev.travelapplication.mappers.UserMapper;
 import com.proxidev.travelapplication.repository.RefreshTokenRepository;
 import com.proxidev.travelapplication.security.JwtTokenProvider;
 import org.junit.jupiter.api.DisplayName;
@@ -33,6 +35,10 @@ class AuthServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private RefreshTokenRepository refreshTokenRepo;
+    @Mock
+    private UserMapper userMapper;
+    @Mock
+    private CompanyMapper companyMapper;
 
     @InjectMocks
     private AuthService authService;
@@ -58,8 +64,9 @@ class AuthServiceTest {
                 .build();
 
         // Mocking dependencies
-        when(userService.createUser(anyString(), anyString(), anyString(), anyString(), anyString(),
-                eq(UserType.TRAVELER)))
+        when(userMapper.toEntity(any(RegisterTravelerRequest.class), any(UserType.class)))
+                .thenReturn(user);
+        when(userService.createUser(any(User.class), anyString()))
                 .thenReturn(user);
         when(userService.findByIdWithRoles(userId)).thenReturn(user);
         when(userService.extractPermissions(any())).thenReturn(Collections.emptyList());
@@ -73,6 +80,9 @@ class AuthServiceTest {
                 .thenReturn("mock-refresh-token");
         when(jwt.getAccessExpirationMs()).thenReturn(3600000L);
         when(jwt.getRefreshExpirationMs()).thenReturn(86400000L);
+
+        when(userMapper.toUserInfoResponse(any(), anyList(), anyList()))
+                .thenReturn(UserInfoResponse.builder().email("john.doe@example.com").build());
 
         // When
         TokenResponse response = authService.registerTraveler(req);

@@ -11,6 +11,8 @@ import com.proxidev.travelapplication.repository.PermissionRepository;
 import com.proxidev.travelapplication.repository.RoleRepository;
 import com.proxidev.travelapplication.repository.UserRepository;
 import com.proxidev.travelapplication.repository.UserRoleRepository;
+import com.proxidev.travelapplication.mappers.PermissionMapper;
+import com.proxidev.travelapplication.mappers.RoleMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,19 +29,19 @@ public class RoleService {
     private final PermissionRepository permissionRepo;
     private final UserRoleRepository userRoleRepo;
     private final UserRepository userRepo;
+    private final RoleMapper roleMapper;
+    private final PermissionMapper permissionMapper;
 
     public List<PermissionResponse> getAllPermissions() {
         return permissionRepo.findAllByOrderByModuleAscNameAsc().stream()
-                .map(p -> PermissionResponse.builder()
-                        .id(p.getId()).name(p.getName())
-                        .description(p.getDescription()).module(p.getModule()).build())
+                .map(permissionMapper::toPermissionResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<RoleResponse> getCompanyRoles(UUID companyId) {
         return roleRepo.findByCompanyIdOrderByCreatedAtAsc(companyId).stream()
-                .map(this::toResponse).toList();
+                .map(roleMapper::toRoleResponse).toList();
     }
 
     @Transactional
@@ -52,11 +54,8 @@ public class RoleService {
         if (perms.size() != req.getPermissionIds().size())
             throw new BusinessException("Certaines permissions sont invalides");
 
-        Role role = Role.builder()
-                .name(req.getName()).description(req.getDescription())
-                .company(Company.builder().id(companyId).build())
-                .system(false).permissions(perms).build();
-        return toResponse(roleRepo.save(role));
+        Role role = roleMapper.toEntity(req, Company.builder().id(companyId).build(), perms);
+        return roleMapper.toRoleResponse(roleRepo.save(role));
     }
 
     @Transactional
@@ -70,7 +69,7 @@ public class RoleService {
         role.setName(req.getName());
         role.setDescription(req.getDescription());
         role.setPermissions(perms);
-        return toResponse(roleRepo.save(role));
+        return roleMapper.toRoleResponse(roleRepo.save(role));
     }
 
     @Transactional
@@ -114,19 +113,6 @@ public class RoleService {
         return userRoleRepo.findByUserIdFetchRolePermissions(userId).stream()
                 .map(UserRole::getRole)
                 .filter(r -> companyId.equals(r.getCompanyId()))
-                .map(this::toResponse).toList();
-    }
-
-    private RoleResponse toResponse(Role role) {
-        return RoleResponse.builder()
-                .id(role.getId()).name(role.getName())
-                .description(role.getDescription())
-                .companyId(role.getCompanyId()).system(role.isSystem())
-                .permissions(role.getPermissions() == null ? List.of()
-                        : role.getPermissions().stream().map(p -> PermissionResponse.builder()
-                                .id(p.getId()).name(p.getName())
-                                .description(p.getDescription()).module(p.getModule())
-                                .build()).toList())
-                .build();
+                .map(roleMapper::toRoleResponse).toList();
     }
 }

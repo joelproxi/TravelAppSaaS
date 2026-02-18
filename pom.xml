@@ -166,7 +166,7 @@
                         <!-- Exclure les classes sans logique métier -->
                         <exclude>com/proxidev/travelapplication/entity/**</exclude>
                         <exclude>com/proxidev/travelapplication/enums/**</exclude>
-                        <exclude>com/proxidev/travelapplication/dto/**</exclude>
+                        <exclude>com/proxidev/travelapplication/dtos/**</exclude>
                         <exclude>com/proxidev/travelapplication/config/**</exclude>
                         <exclude>com/proxidev/travelapplication/exception/**</exclude>
                         <exclude>com/proxidev/travelapplication/seed/**</exclude>
@@ -225,7 +225,8 @@
                                 <rule>
                                     <element>CLASS</element>
                                     <includes>
-                                        <include>com.proxidev.travelapplication.service.*</include>
+                                        <include>com.proxidev.travelapplication.services.*</include>
+                                        <include>com.proxidev.travelapplication.mappers.*</include>
                                     </includes>
                                     <limits>
                                         <limit>

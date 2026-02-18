@@ -66,11 +66,11 @@ validate-dockerfile:
   image: hadolint/hadolint:latest-debian
   script:
     - echo "🔍 Validation du Dockerfile..."
-    - hadolint docker/Dockerfile || true
+    - hadolint Dockerfile || true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
-        - "docker/Dockerfile"
+        - "Dockerfile"
   allow_failure: true
   tags:
     - docker

@@ -1,8 +1,6 @@
 package com.proxidev.travelapplication.services;
 
-
 import com.proxidev.travelapplication.entity.User;
-import com.proxidev.travelapplication.enums.UserType;
 import com.proxidev.travelapplication.exception.BusinessException;
 import com.proxidev.travelapplication.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,16 +19,11 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public User createUser(String firstName, String lastName, String email,
-                           String rawPassword, String phone, UserType userType) {
-        if (userRepository.existsByEmail(email))
+    public User createUser(User user, String rawPassword) {
+        if (userRepository.existsByEmail(user.getEmail()))
             throw new BusinessException("Un utilisateur avec cet email existe déjà", HttpStatus.CONFLICT);
 
-        User user = User.builder()
-                .firstName(firstName).lastName(lastName).email(email)
-                .password(passwordEncoder.encode(rawPassword))
-                .phone(phone).userType(userType).active(true)
-                .build();
+        user.setPassword(passwordEncoder.encode(rawPassword));
         return userRepository.save(user);
     }
 
@@ -54,7 +47,8 @@ public class UserService {
     }
 
     public List<String> extractRoleNames(User user) {
-        if (user.getUserRoles() == null) return Collections.emptyList();
+        if (user.getUserRoles() == null)
+            return Collections.emptyList();
         return user.getUserRoles().stream()
                 .filter(ur -> ur.getRole() != null)
                 .map(ur -> ur.getRole().getName()).toList();
