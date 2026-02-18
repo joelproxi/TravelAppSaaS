@@ -11,6 +11,9 @@ jobs:
     name: Lint & Analysis
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Setup Project
         uses: ./.github/actions/setup
 
